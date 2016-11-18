@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Autumn</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.6/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.6/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Flip Cards</h1>
+      <div id="app" >
+  </div>
+    <script type="text/babel">
+      Array.prototype.shuffleArray = function() {
+        for(var i = this.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = this[i];
+          this[i] = this[j];
+          this[j] = temp;
+        }
+        return this;
+      }
+
+      var App = React.createClass({
+        getInitialState: function() {
+          return {
+              cardsContent: JSON.parse(localStorage.getItem('cards') || '[]'),
+              flippedCard: -1,
+              currentTab: 1,
+              cardForExam: 0,
+              cardsForExam: JSON.parse(localStorage.getItem('cards') || '[]').shuffleArray(),
+          }
+        },
+        render: function () {
+          var allCards = [];
+          this.state.cardsContent.forEach(function (card, index) {
+            allCards.push(<Card key={index} frontFace={card.frontFace} backFace={card.backFace} cardIndex={index} isFlipped={this.state.flippedCard === index} flipCard={this.flipCard}/>);
+          }.bind(this));
+          if(this.state.currentTab === 1) {
+            return <div>
+              <Tabs currentTab={this.state.currentTab} changeTab={this.changeCurrentTab}/>
+              <Form addToCards={this.addNewCard} />
+              {allCards}
+            </div>
+          }
+          let allCountries = this.state.cardsForExam.map(function(el) {
+            return el.frontFace;
+          })
+          var secondTab;
+          if(this.state.cardsForExam.length === 0) {
+            secondTab =  <h3>You need to add cards for exam </h3>;
+          } else secondTab = this.state.cardsContent.length === this.state.cardForExam ? <h2>Good work! Now you should know the capitals of all these countries: {allCountries.join(', ')}</h2> : <Exam examCard={this.state.cardsForExam[this.state.cardForExam]} showNewCard={this.showNewCard}/>;
+          return <div>
+            <Tabs currentTab={this.state.currentTab} changeTab={this.changeCurrentTab}/>
+            {secondTab}
+          </div>
+        },
+        addNewCard: function(card) {
+          let newCardlist = this.state.cardsContent.slice(0);
+          newCardlist.unshift(card);
+          localStorage.setItem('cards', JSON.stringify(newCardlist));
+          this.setState({
+            cardsContent: newCardlist,
+            cardsForExam: newCardlist,
+          });
+        },
+        flipCard: function(index) {
+          this.setState({
+            flippedCard: this.state.flippedCard === index ? -1 : index,
+          });
+        },
+        changeCurrentTab: function(id) {
+          if(this.state.currentTab != id) {
+              this.setState({
+                currentTab: this.state.currentTab === 1 ? 2 : 1,
+              })
+          }
+        },
+        getCardForExam: function() {
+          this.setState(function(prevState) {
+            return {
+              cardForExam: prevState.cardForExam + 1,
+            }
+          });
+        },
+        showNewCard: function() {
+          var isLastCardInExam = false;
+          if(this.state.cardForExam == this.state.cardsForExam.length - 1)
+          {
+            isLastCardInExam = true;
+          }
+          this.getCardForExam();
+          return isLastCardInExam;
+        }
+      });
+
+      var Tab = React.createClass({
+        propTypes: {
+          id: React.PropTypes.number.isRequired,
+          changeTab: React.PropTypes.func.isRequired,
+          currTab: React.PropTypes.number.isRequired,
+        },
+        render: function() {
+          if(this.props.id === this.props.currTab) {
+            return <div onClick={this.handleClickOnTab.bind(this, this.props.id)} className="tab" style={{backgroundColor: "#A2D9CE"}}>
+              {this.props.children}
+            </div>
+          } else {
+              return <div onClick={this.handleClickOnTab.bind(this, this.props.id)} className="tab">
+                {this.props.children}
+              </div>
+          }
+        },
+        handleClickOnTab: function(id) {
+          this.props.changeTab(id);
+        },
+      });
+
+      var Tabs = React.createClass({
+        propTypes: {
+          currentTab: React.PropTypes.number.isRequired,
+        },
+        render: function() {
+            return  <div className='tabs'>
+              <Tab id={1} changeTab={this.props.changeTab} currTab={this.props.currentTab}> All Cards </Tab>
+              <Tab id={2} changeTab={this.props.changeTab} currTab={this.props.currentTab}>  Exam </Tab>
+            </div>
+          }
+      })
+
+      var Card = React.createClass({
+        render: function() {
+          var isActveClass = this.props.isFlipped ? 'active' : '';
+          var classForFrontCard = 'fron face';
+          return <div className={"f1_container " + isActveClass} onClick={this.flipCard}>
+            <div className='f1_card'>
+              <div className={'front face'}>
+                {this.props.frontFace}
+              </div>
+              <div className="back face">
+                {this.props.backFace}
+              </div>
+            </div>
+          </div>
+        },
+        flipCard: function() {
+          this.props.flipCard(this.props.cardIndex);
+        }
+      });
+
+      var Form = React.createClass({
+        getInitialState: function() {
+          return {
+            frontFace: '',
+            backFace: '',
+            error: '',
+          }
+        },
+        render: function() {
+          return <form className="form-inline addCardForm">
+            <div className="form-group">
+              <input type="text" className="form-control" onChange={this.handleCounty} value={this.state.frontFace} placeholder="country"></input>
+            </div>
+            <div className="form-group">
+              <input type="text" className="form-control" onChange={this.handleCapital} value={this.state.backFace} placeholder="capital"></input>
+            </div>
+            <input type="submit" value="Add" className='btn' onClick={this.handleAddingData}></input>
+            <span className="errorMessage">{this.state.error}</span>
+          </form>
+        },
+
+        handleCounty: function(e) {
+          this.setState({
+            frontFace : e.target.value,
+          });
+        },
+        handleCapital: function(e) {
+          this.setState({
+            backFace : e.target.value,
+          });
+        },
+        handleAddingData: function(e) {
+          e.preventDefault();
+          if(this.state.frontFace === '' || this.state.backFace === '') {
+            this.setState({
+              error:'please add country and capital',
+            });
+          } else {
+            this.props.addToCards({
+              backFace: this.state.backFace,
+              frontFace: this.state.frontFace,
+            });
+            this.setState({
+              frontFace: '',
+              error: '',
+              backFace: '',
+            });
+          }
+        }
+      });
+
+      var Exam = React.createClass({
+        propTypes: {
+          examCard: React.PropTypes.object.isRequired,
+        },
+        componentWillMount: function() {
+            this.setAnswers(this.props.examCard);
+        },
+        getInitialState: function() {
+          return {
+            availableAnswers: [],
+          }
+        },
+        setAnswers: function(examCard) {
+          var data = storage.getData();
+          var answers = [];
+          for(var i = 0; i < 4; i++) {
+            var capital = data[Math.floor(Math.random() * data.length)].capital;
+            if(capital === '') {
+              while(true) {
+                capital = data[Math.floor(Math.random() * data.length)].capital;
+                if(capital !== '') {
+                  break;
+                }
+              }
+            }
+            answers.push(capital);
+          }
+          answers.push(examCard.backFace);
+          answers.shuffleArray();
+          this.setState({
+            availableAnswers: answers,
+          })
+        },
+        componentWillReceiveProps: function(nextProps) {
+          this.setAnswers(nextProps.examCard);
+        },
+
+        render: function() {
+          return <div className="exam">
+            <ExamCard frontFace={this.props.examCard.frontFace}/>
+            <Answers answers={this.state.availableAnswers} showNewCard={this.props.showNewCard} correctAnswer={this.props.examCard.backFace}/>
+          </div>
+        },
+      });
+
+      var ExamCard = React.createClass({
+        render: function() {
+          return <div className='card_exam face'>
+            {this.props.frontFace}
+          </div>
+        }
+      });
+
+      var Answers = React.createClass({
+        propTypes: {
+          answers: React.PropTypes.array.isRequired,
+          correctAnswer: React.PropTypes.string.isRequired,
+         },
+        render: function() {
+          var answers = this.props.answers;
+            answers = answers.map(function(el, index) {
+              var isCorrect = el === this.props.correctAnswer;
+              return <Answer key={index} isCorrect={isCorrect} showNewCard={this.props.showNewCard}>{el}</Answer>
+          }.bind(this));
+          return <div className="answers">
+            {answers}
+          </div>
+        },
+      });
+
+      var Answer = React.createClass({
+        propTypes: {
+          isCorrect: React.PropTypes.bool.isRequired,
+        },
+        getInitialState: function() {
+          return {
+            isPressed: false,
+          }
+        },
+        render: function () {
+            if(this.state.isPressed && this.props.isCorrect) {
+              return <div>
+                <button onClick={this.checkAnswer.bind(this, this.props.isCorrect)} className="btn answerButton" style={{backgroundColor: "#A2D9CE"}}>
+                  {this.props.children}
+                </button>
+              </div>
+            } else if(this.state.isPressed && !this.props.isCorrect) {
+              return <div>
+                <button className="btn answerButton" onClick={this.checkAnswer.bind(this, this.props.isCorrect)} style={{backgroundColor: "#daa0a0"}}>
+                  {this.props.children}
+                </button>
+              </div>
+            } else return <div>
+              <button className="btn answerButton" onClick={this.checkAnswer.bind(this, this.props.isCorrect)}>
+                {this.props.children}
+              </button>
+            </div>
+        },
+        componentWillReceiveProps(nextProp) {
+          if(nextProp != this.props.children) {
+            this.setState({
+              isPressed: false,
+            })
+          }
+        },
+        checkAnswer: function(isCorrect, e) {
+          this.setState({
+            isPressed:true,
+          });
+          if(isCorrect) {
+            setTimeout(function() {
+              if(!this.props.showNewCard()) {
+                this.setState({
+                  isPressed: false,
+                });
+              }
+            }.bind(this), 1000);
+          }
+        },
+      });
+
+
+      $.ajax({
+        url: 'https://restcountries.eu/rest/v1/all',
+        type: 'get',
+      }).done(function(data) {
+        storage.setData(data);
+        ReactDOM.render(<App />, document.getElementById('app'));
+      }.bind(this)).fail(function(data) {
+        if(data.statusText) {
+          console.log(data.statusText);
+        }
+      });
+
+      var storage = {
+        setData: function(data) {
+            this.data = data;
+        },
+        getData: function() {
+          return this.data;
+        },
+        data: null,
+      }
+
+    </script>
+
+</body>
