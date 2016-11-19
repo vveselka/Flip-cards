@@ -16,6 +16,7 @@
       <div id="app" >
   </div>
     <script type="text/babel">
+    
       Array.prototype.shuffleArray = function() {
         for(var i = this.length - 1; i > 0; i--) {
           var j = Math.floor(Math.random() * (i + 1));
@@ -124,7 +125,7 @@
         },
         render: function() {
           if(this.props.id === this.props.currTab) {
-            return <div onClick={this.handleClickOnTab.bind(this, this.props.id)} className="tab" style={{backgroundColor: "#A2D9CE"}}>
+            return <div onClick={this.handleClickOnTab.bind(this, this.props.id)} className="tab" style={{borderBottom: "2px solid white", zIndex: '2'}}>
               {this.props.children}
             </div>
           } else {
