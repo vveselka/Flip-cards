@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Autumn</title>
+    <title>Flip Cards</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.6/react.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.6/react-dom.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
@@ -54,7 +54,7 @@
           var secondTab;
           if(this.state.cardsForExam.length === 0) {
             secondTab =  <h3>You need to add cards for exam </h3>;
-          } else secondTab = this.state.cardsContent.length === this.state.cardForExam ? <h2>Good work! Now you should know the capitals of all these countries: {allCountries.join(', ')}</h2> : <Exam examCard={this.state.cardsForExam[this.state.cardForExam]} showNewCard={this.showNewCard}/>;
+          } else secondTab = this.state.cardsContent.length === this.state.cardForExam ?<div><h4>Good work! Now you should know the capitals of all these countries: {allCountries.join(', ')}</h4><StartAgainButton startAgain={this.startExamAgain} /></div> : <Exam examCard={this.state.cardsForExam[this.state.cardForExam]} showNewCard={this.showNewCard}/>;
           return <div>
             <Tabs currentTab={this.state.currentTab} changeTab={this.changeCurrentTab}/>
             {secondTab}
@@ -96,8 +96,25 @@
           }
           this.getCardForExam();
           return isLastCardInExam;
-        }
+        },
+        startExamAgain: function() {
+          this.setState({
+            cardForExam: 0,
+            cardsForExam: JSON.parse(localStorage.getItem('cards') || '[]').shuffleArray(),
+          })
+        },
       });
+
+      var StartAgainButton = React.createClass({
+        handleClick: function () {
+          this.props.startAgain();
+        },
+        render: function () {
+          return <div className="btn startExam" onClick={this.handleClick}>
+            Start again
+          </div>
+        }
+      })
 
       var Tab = React.createClass({
         propTypes: {
