@@ -16,7 +16,7 @@
       <div id="app" >
   </div>
     <script type="text/babel">
-    
+
       Array.prototype.shuffleArray = function() {
         for(var i = this.length - 1; i > 0; i--) {
           var j = Math.floor(Math.random() * (i + 1));
@@ -26,6 +26,44 @@
         }
         return this;
       }
+
+      var preloadedCards =
+      [
+        {
+          frontFace:'Austria',
+          backFace:'Vienna',
+        },
+        {
+          frontFace:'France',
+          backFace:'Paris',
+        },
+        {
+          frontFace:'Morocco',
+          backFace:'Rabat',
+        },
+        {
+          frontFace:'Ecuador',
+          backFace:'Quito',
+        },
+        {
+          frontFace:'Peru',
+          backFace:'Lima',
+        },
+        {
+          frontFace:'Ukraine',
+          backFace:'Kyiv',
+        },
+        {
+          frontFace:'India',
+          backFace:'New Delhi',
+        },
+        {
+          frontFace:'Australia',
+          backFace:'Canberra',
+        },
+      ];
+
+    localStorage.setItem('cards', JSON.stringify(preloadedCards));
 
       var App = React.createClass({
         getInitialState: function() {
