@@ -220,24 +220,19 @@
         render: function() {
           return <form className="form-inline addCardForm">
             <div className="form-group">
-              <input type="text" className="form-control" onChange={this.handleCounty} value={this.state.frontFace} placeholder="country"></input>
+              <input type="text" className="form-control" name ='frontFace'onChange={this.handleInput} value={this.state.frontFace} placeholder="country"></input>
             </div>
             <div className="form-group">
-              <input type="text" className="form-control" onChange={this.handleCapital} value={this.state.backFace} placeholder="capital"></input>
+              <input type="text" className="form-control" name='backFace' onChange={this.handleInput} value={this.state.backFace} placeholder="capital"></input>
             </div>
             <input type="submit" value="Add" className='btn' onClick={this.handleAddingData}></input>
             <span className="errorMessage">{this.state.error}</span>
           </form>
         },
 
-        handleCounty: function(e) {
+        handleInput: function(e) {
           this.setState({
-            frontFace : e.target.value,
-          });
-        },
-        handleCapital: function(e) {
-          this.setState({
-            backFace : e.target.value,
+            [e.target.name] : e.target.value,
           });
         },
         handleAddingData: function(e) {
